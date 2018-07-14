@@ -1,0 +1,4 @@
+#top-bar{text-align:center;margin:3em 5px 1em;font-size:20px;}
+#top-bar #score{position: absolute;left: 5px;}
+#top-bar #status{display:inline-block;font-weight:700;}
+#top-bar #end-turn{position: absolute;right: 5px;border:1px #CCC solid;background:#DDD;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;padding:5px;cursor:pointer;}

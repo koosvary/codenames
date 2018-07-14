@@ -1,0 +1,22 @@
+#link{position:relative;line-height:2em;overflow:hidden;width:300px;margin:0 auto}
+.redacted{position:absolute;top:0;bottom:0;left:0;width:100%;background:#000;-moz-animation:hideLink .7s ease-in alternate 1;-webkit-animation:hideLink .7s ease-in alternate 1;-ms-animation:hideLink .7s ease-in alternate 1;-o-animation:hideLink .7s ease-in alternate 1;animation:hideLink .7s ease-in alternate 1}
+@-webkit-keyframes hideLink{
+0%{width:0%}
+100%{width:100%}
+}
+@-moz-keyframes hideLink{
+0%{width:0%}
+100%{width:100%}
+}
+@-ms-keyframes hideLink{
+0%{width:0%}
+100%{width:100%}
+}
+@-o-keyframes hideLink{
+0%{width:0%}
+100%{width:100%}
+}
+@keyframes hideLink{
+0%{width:0%}
+100%{width:100%}
+}

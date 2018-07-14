@@ -1,0 +1,20 @@
+#bottom-bar{display:block;min-height:75px;margin:0.5em 5px 0}
+#bottom-bar .left{float:left}
+#bottom-bar .right{float:right}
+#bottom-bar button{padding:5px;margin-top:5px;border:1px #CCC solid;background:#DDD;cursor:pointer;float: right;}
+#bottom-bar #next-game{margin-left:10px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px}
+/*! Slider checkboxes */
+#bottom-bar #switch-input{height:35px;position: relative;vertical-align: middle;}
+#bottom-bar #switch-input .switch-label{position:relative;display:block;line-height:35px;float:right}
+#bottom-bar .right #switch-input .switch-label {float:left}
+#bottom-bar .switch{position:relative;display:inline-block;width:45px;height:25.5px;margin-top: 4.75px;margin-right: 5px;}
+#bottom-bar .right .switch{margin-left: 5px;margin-right: 0;}
+#bottom-bar .switch input{display:none}
+#bottom-bar .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#DDD;-webkit-transition:.4s;transition:.4s}
+#bottom-bar .slider:before{position:absolute;content:"";height:19.5px;width:19.5px;left:3px;bottom:3px;background-color:#FFF;-webkit-transition:.4s;transition:.4s}
+#bottom-bar input:checked+.slider{background-color:#2196f3}
+#bottom-bar input:focus+.slider{box-shadow:0 0 1px #2196f3}
+#bottom-bar input:checked+.slider:before{-webkit-transform:translateX(19.5px);-ms-transform:translateX(19.5px);transform:translateX(19.5px)}
+#bottom-bar .slider.round{border-radius:25.5px}
+#bottom-bar .slider.round:before{border-radius:50%}
+/*! End slider checkboxes */

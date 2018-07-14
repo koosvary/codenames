@@ -1,0 +1,30 @@
+{
+  "name": "codenames",
+  "version": "1.0.0",
+  "description": "A React JS adaption of the Codenames boardgame. Uses Redux to control states server-side.",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "client-install": "cd client && npm install",
+    "server-install": "cd server && npm install",
+    "start-all-dev": "concurrently \"npm run client\" \"npm run server-dev\"",
+    "start-all": "concurrently \"npm run server\" \"npm run client\"",
+    "server-dev": "node server/index.js",
+    "server": "pm2 start server/index.js --name \"Codenames\"",
+    "client": "npm start --prefix client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koosvary/codenames.git"
+  },
+  "author": "Lachlan Meyer",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/koosvary/codenames/issues"
+  },
+  "homepage": "https://github.com/koosvary/codenames#readme",
+  "dependencies": {
+    "concurrently": "^3.6.0",
+    "pm2": "^3.0.0"
+  }
+}

@@ -1,0 +1,38 @@
+/*! Base game styling */
+#game{width:700px;margin:0 auto;}
+#board{position:relative;font-family: Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif, Verdana,Geneva,Tahoma,sans-serif;}
+#game .red:not(.hidden){color:#d13030;}
+#game .blue:not(.hidden){color:#4183cc;}
+#expansions{margin:0 5px 2em;font-family:'Courier New',Courier,monospace;text-align:center;font-size:22px;}
+#expansions #instruction{margin:0 auto 15px;font-weight:600;}
+#expansions #words-changed{margin:15px auto 0;font-weight:600;}
+#expansions #words-changed.hidden{display: none;}
+#expansions .expansion{width:calc(30% - 6px);width:-moz-calc(30% - 6px);width:-webkit-calc(30% - 6px);margin:0;border:3px solid #fff;border-radius:10px;}
+#expansions .expansion:first-child{margin-right:5%;}
+#expansions .expansion:last-child{margin-left:5%;}
+#expansions .expansion.selected{outline:3px solid #000;}
+#game.player #board .hidden{cursor:pointer;}
+#game #board .neutral.revealed{background:#ede2cc;}
+#game #board .card{vertical-align:middle;background:#DDD;border-radius:10px;width:120px;height:80px;line-height:75px;margin:5px;padding:5px;display:inline-block;text-align:center;}
+#game #board .card .word{vertical-align:middle;display:inline-block;}
+#game.spymaster #board .card.red.hidden{color:#d13030;}
+#game.spymaster #board .card.blue.hidden{color:#4183cc;}
+#game.spymaster #board .card.black.hidden{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
+#game.spymaster #board .card{font-weight:600;}
+#game #board .card.red.revealed{background:#d13030;color:#fff;}
+#game #board .card.blue.revealed{background:#4183cc;color:#fff;}
+#game #board .card.black.revealed{background:#000;color:#fff;}
+/*! End base styling */
+/*! Colourblind scheme */
+#game.colourblind #board .card:not(.neutral):not(.black){width:130px;height:90px;box-sizing:border-box;line-height: 70px;}
+#game.colourblind:not(.spymaster) #board .card.hidden:not(.neutral):not(.black){line-height:75px;}
+#game.colourblind #board .card.revealed{text-decoration:underline;}
+#game.colourblind #board .card.red.revealed,#game.colourblind.spymaster #board .card.red.hidden{outline:3px dashed #d13030;border:3px solid #fff;}
+#game.colourblind #board .card.blue.revealed, #game.colourblind.spymaster #board .card.blue.hidden{outline:3px solid #4183cc;border:3px solid #fff;}
+/*! End colourblind */
+/*! Night mode */
+/*! NOTE(Meyer): Needs serious work */
+#game.night-mode{background:#111;color:white;}
+#game.night-mode #board .card{background:#525252;}
+#game.night-mode #board .neutral.revealed{background:#757575;}
+/*! End night mode */
