@@ -5,7 +5,8 @@ export default function reducer(state = {
   redCards: 0,
   blueCards: 0,
   winner: null,
-  blueTeamFirst: false
+  blueTeamFirst: false,
+  hardMode: false,
 }, action)
 {
   switch (action.type)

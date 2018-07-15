@@ -1,12 +1,13 @@
 {
   "name": "codenames",
-  "version": "1.0.0",
-  "description": "A React JS adaption of the Codenames boardgame. Uses Redux to control states server-side.",
+  "version": "1.1.1",
+  "description": "A React JS adaption of the Codenames boardgame. Uses Express to control games server-side.",
   "main": "index.js",
   "private": true,
   "scripts": {
     "client-install": "cd client && npm install",
     "server-install": "cd server && npm install",
+    "client-build": "cd client && npm run build",
     "start-all-dev": "concurrently \"npm run client\" \"npm run server-dev\"",
     "start-all": "concurrently \"npm run server\" \"npm run client\"",
     "server-dev": "node server/index.js",

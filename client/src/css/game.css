@@ -17,7 +17,7 @@
 #game #board .card .word{vertical-align:middle;display:inline-block;}
 #game.spymaster #board .card.red.hidden{color:#d13030;}
 #game.spymaster #board .card.blue.hidden{color:#4183cc;}
-#game.spymaster #board .card.black.hidden{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
+#game.spymaster:not(.hard-mode) #board .card.black.hidden{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
 #game.spymaster #board .card{font-weight:600;}
 #game #board .card.red.revealed{background:#d13030;color:#fff;}
 #game #board .card.blue.revealed{background:#4183cc;color:#fff;}

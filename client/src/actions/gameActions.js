@@ -37,5 +37,10 @@ export function cardClick(gameName, cardIndex, teamClicked)
   axios.post(gameName + '/cardClicked', {
     cardIndex,
     teamClicked
-  })
+  });
+}
+
+export function toggleHardMode(gameName)
+{
+  axios.get(gameName + '/hardMode');
 }

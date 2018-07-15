@@ -4,8 +4,8 @@ import io from "socket.io-client";
 import Board from './Board';
 import { connect } from 'react-redux';
 
-import { toggleExpansion, changeRole, toggleColourblind, toggleNightMode } from '../actions/userOptionsActions';
-import { updateGame, loadGame, startNewGame, endTurn, cardClick } from '../actions/gameActions';
+import { changeRole, toggleExpansion, toggleColourblind, toggleNightMode } from '../actions/userOptionsActions';
+import { updateGame, loadGame, startNewGame, endTurn, cardClick, toggleHardMode } from '../actions/gameActions';
 import { socketUrl } from '../config/serverUrl';
 
 const stateMap = (store) => {
@@ -26,6 +26,7 @@ class Game extends Component
     this.changeRole = this.changeRole.bind(this);
     this.toggleColourblind = this.toggleColourblind.bind(this);
     this.toggleNightMode = this.toggleNightMode.bind(this);
+    this.toggleHardMode = this.toggleHardMode.bind(this);
 
     // Get game name from URL
     const gameName = window.location.pathname.split('/')[1];
@@ -61,7 +62,8 @@ class Game extends Component
       <div className={
           (this.props.options.role === 'Spymaster' ? 'spymaster' : 'player') + 
           (this.props.options.colourblind ? ' colourblind' : '') + 
-          (this.props.options.nightMode ? ' night-mode' : '')
+          (this.props.options.nightMode ? ' night-mode' : '') +
+          (this.props.game.hardMode ? ' hard-mode' : '')
         } id="game">
         <div id="board">
           <div id="top-bar">
@@ -79,14 +81,14 @@ class Game extends Component
           />
           <div id="bottom-bar" className={this.props.options.role === 'Spymaster' ? 'spymaster-selected' : 'player-selected'}>
             <div className="left">
-              <div id="switch-input">
-                <div className="switch-label">Colourblind</div>
+              <div className="switch-input">
                 <label className="switch">
                   <input type="checkbox" onChange={this.toggleColourblind} />
                   <span className="slider round"></span>
                 </label>
+                <div className="switch-label">Colourblind</div>
               </div>
-              {/* <div id="switch-input">
+              {/* <div className="switch-input">
                 <div className="switch-label">Night Mode</div>
                 <label className="switch">
                   <input type="checkbox" onChange={this.toggleColourblind} />
@@ -95,12 +97,19 @@ class Game extends Component
               </div> */}
             </div>
             <div className="right">
-              <div id="switch-input">
-                <div className="switch-label">Spymaster</div>
+              <div className="switch-input">
                 <label className="switch">
                     <input type="checkbox" value={this.props.options.role === 'Spymaster' ? 'Player' : 'Spymaster'} onChange={this.changeRole} />
                   <span className="slider round"></span>
                 </label>
+                <div className="switch-label">Spymaster</div>
+              </div>
+              <div className="switch-input">
+                <label className="switch">
+                  <input type="checkbox" onChange={this.toggleHardMode} checked={!!this.props.game.hardMode}/>
+                  <span className="slider round"></span>
+                </label>
+                <div className="switch-label">Hard mode</div>
               </div>
               <button id="next-game" onClick={this.newGame}>Next game</button>
             </div>
@@ -212,6 +221,11 @@ class Game extends Component
   endTurn()
   {
     endTurn(this.props.game.gameName);
+  }
+
+  toggleHardMode()
+  {
+    toggleHardMode(this.props.game.gameName);
   }
 }
 

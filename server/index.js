@@ -16,7 +16,8 @@ const defaultGameState = {
   redCards: 0,
   blueCards: 0,
   winner: null,
-  blueTeamFirst: false
+  blueTeamFirst: false,
+  hardMode: false
 };
 
 // Body Parser allows reading of JSON from POST and/or URL parameters
@@ -78,8 +79,9 @@ apiRoutes.post('/:gameName/newGame', (req, res) => {
   
   if(gameFromStorage)
   {
+    console.log(gameFromStorage.hardMode)
     // Update existing game
-    game = Object.assign(gameFromStorage, game);
+    game = Object.assign(gameFromStorage, game, {hardMode: gameFromStorage.hardMode});
   }
   else
   {
@@ -145,6 +147,24 @@ apiRoutes.get('/:gameName/endTurn', (req, res) => {
   if(game)
   {
     game.blueTurn = !game.blueTurn;
+    io.to(gameName).emit('updateGame', game);
+    writeGamesToFile(games);
+  }
+});
+
+apiRoutes.get('/:gameName/hardMode', (req, res) => {
+  
+  res.sendStatus(200);
+  
+  const gameName = req.params.gameName;
+
+  let games = readGamesFromFile();
+  
+  let game = games.find(existingGame => existingGame.gameName == gameName);
+  
+  if(game)
+  {
+    game.hardMode = !game.hardMode;
     io.to(gameName).emit('updateGame', game);
     writeGamesToFile(games);
   }

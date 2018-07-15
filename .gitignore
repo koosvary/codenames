@@ -17,3 +17,7 @@ yarn-error.log*
 
 client/build/
 client/client/
+
+client/src/config/serverUrl.js
+
+server/models/games.json
