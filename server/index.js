@@ -79,7 +79,6 @@ apiRoutes.post('/:gameName/newGame', (req, res) => {
   
   if(gameFromStorage)
   {
-    console.log(gameFromStorage.hardMode)
     // Update existing game
     game = Object.assign(gameFromStorage, game, {hardMode: gameFromStorage.hardMode});
   }
@@ -107,18 +106,20 @@ apiRoutes.post('/:gameName/cardClicked', (req, res) => {
   if(game)
   {
     let card = game.cards[cardIndex];
+    
+    // Don't click the card if already clicked or game is over
+    if(game.winner || card.clicked)
+    {
+      return;
+    }
+
     card.clicked = true;
     card.teamClicked = teamClicked
-
-    if(card.team == 'Red')
-    {
-      game.redCards--;
-    }
     
-    if(card.team == 'Blue')
-    {
-      game.blueCards--;
-    }
+    const cardsRemaining = calculateCardsRemaining(game.cards);
+
+    game.redCards = cardsRemaining.redTeam;
+    game.blueCards = cardsRemaining.blueTeam;
 
     game.winner = determineWinner(game.cards);
 
@@ -172,14 +173,30 @@ apiRoutes.get('/:gameName/hardMode', (req, res) => {
 
 /* Helper functions */
 // Determines winner
+function calculateCardsRemaining(cards)
+{
+  let cardCount = {
+    blueTeam: 0,
+    redTeam: 0
+  }
+
+  if(cards.length)
+  {
+    const blueCardsRemaining = cards.filter(card => card.team === 'Blue' && !card.clicked);
+    cardCount.blueTeam = blueCardsRemaining.length;
+  
+    const redCardsRemaining = cards.filter(card => card.team === 'Red' && !card.clicked);
+    cardCount.redTeam = redCardsRemaining.length;
+  }
+
+  return cardCount;
+}
+
 function determineWinner(cards)
 {
   if (cards.length)
   {
-    const assassinCard = cards.find(function (card)
-    {
-      return card.team === 'Assassin' && card.clicked;
-    });
+    const assassinCard = cards.find(card => card.team === 'Assassin' && card.clicked);
     
     if (assassinCard)
     {
@@ -193,16 +210,14 @@ function determineWinner(cards)
       }
     }
     
-    const blueCardsRemaining = cards.filter(card => card.team === 'Blue' && !card.clicked);
+    const cardsRemaining = calculateCardsRemaining(cards);
     
-    if (blueCardsRemaining.length === 0)
+    if (cardsRemaining.blueTeam === 0)
     {
       return 'Blue';
     }
     
-    const redCardsRemaining = cards.filter(card => card.team === 'Red' && !card.clicked);
-    
-    if (redCardsRemaining.length === 0)
+    if (cardsRemaining.redTeam === 0)
     {
       return 'Red';
     }
