@@ -11,7 +11,7 @@
     "start-all-dev": "concurrently \"npm run client\" \"npm run server-dev\"",
     "start-all": "concurrently \"npm run server\" \"npm run client\"",
     "server-dev": "node server/index.js",
-    "server": "pm2 start server/index.js --name \"Codenames\"",
+    "server": "pm2 start server/index.js --name Codenames",
     "client": "npm start --prefix client"
   },
   "repository": {

@@ -18,7 +18,7 @@
 #game.spymaster #board .card.red.hidden{color:#d13030;}
 #game.spymaster #board .card.blue.hidden{color:#4183cc;}
 #game.spymaster:not(.hard-mode) #board .card.black.hidden{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
-#game.spymaster #board .card{font-weight:600;}
+#game.spymaster #board .card{font-weight:600;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 #game #board .card.red.revealed{background:#d13030;color:#fff;}
 #game #board .card.blue.revealed{background:#4183cc;color:#fff;}
 #game #board .card.black.revealed{background:#000;color:#fff;}
@@ -30,6 +30,8 @@
 #game.colourblind #board .card.red.revealed,#game.colourblind.spymaster #board .card.red.hidden{outline:3px dashed #d13030;border:3px solid #fff;}
 #game.colourblind #board .card.blue.revealed, #game.colourblind.spymaster #board .card.blue.hidden{outline:3px solid #4183cc;border:3px solid #fff;}
 /*! End colourblind */
+
+
 /*! Night mode */
 /*! NOTE(Meyer): Needs serious work */
 #game.night-mode{background:#111;color:white;}

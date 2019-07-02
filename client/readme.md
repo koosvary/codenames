@@ -38,4 +38,5 @@ server {
 
 If you choose to change the express server port, please remember to change the `PORT` variable found in ../server/index.js accordingly.
 
-Additionally, change the URLs found in config/serverUrl to your server location.
+Additionally, change the URLs found in `config/serverUrl` to your server location.
+- If you're hosting the node server on the same domain as the client, you should not include the ports in the `config/serverUrl` file.

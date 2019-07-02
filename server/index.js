@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const socket = require('socket.io');
 const fs = require('fs');
+const time = require('express-timestamp');
+const moment = require('moment');
 
 const wordList = require('./models/cards');
 
@@ -28,6 +30,9 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+
+// Use the request timestamp library
+app.use(time.init);
 
 // Route to /api
 var apiRoutes = express.Router();
@@ -57,6 +62,9 @@ apiRoutes.get('/:gameName', (req, res) => {
   {
     game = newGame();
     game.gameName = gameName;
+    game.gameStartTime = req.timestamp;
+    game.lastUpdated = req.timestamp;
+
     games.push(game);
     writeGamesToFile(games);
   }
@@ -71,14 +79,20 @@ apiRoutes.post('/:gameName/newGame', (req, res) => {
   const gameName = req.params.gameName;
   const cardSets = req.body.expansions;
 
-  let games = readGamesFromFile();
+  const games = readGamesFromFile();
 
-  let game = Object.assign({}, newGame(cardSets), {gameName: gameName})
+  let game = Object.assign({}, newGame(cardSets), {gameName})
 
-  let gameFromStorage = games.find(existingGame => existingGame.gameName == game.gameName);  
+  const gameFromStorage = games.find(existingGame => existingGame.gameName == game.gameName);  
   
   if(gameFromStorage)
   {
+    if(!requestIsNew(gameFromStorage.lastUpdated, req.timestamp)) return;
+  
+    // Timestamp the game
+    game.gameStartTime = req.timestamp;
+    game.lastUpdated = req.timestamp;
+    
     // Update existing game
     game = Object.assign(gameFromStorage, game, {hardMode: gameFromStorage.hardMode});
   }
@@ -99,19 +113,18 @@ apiRoutes.post('/:gameName/cardClicked', (req, res) => {
   const cardIndex = req.body.cardIndex;
   const teamClicked = req.body.teamClicked;
 
-  let games = readGamesFromFile();
+  const games = readGamesFromFile();
 
-  let game = games.find(existingGame => existingGame.gameName == gameName);
+  const game = games.find(existingGame => existingGame.gameName == gameName);
 
   if(game)
   {
+    if(!requestIsNew(game.lastUpdated, req.timestamp)) return;
+
     let card = game.cards[cardIndex];
     
     // Don't click the card if already clicked or game is over
-    if(game.winner || card.clicked)
-    {
-      return;
-    }
+    if(game.winner || card.clicked) return;
 
     card.clicked = true;
     card.teamClicked = teamClicked
@@ -141,12 +154,14 @@ apiRoutes.get('/:gameName/endTurn', (req, res) => {
   
   const gameName = req.params.gameName;
 
-  let games = readGamesFromFile();
+  const games = readGamesFromFile();
   
-  let game = games.find(existingGame => existingGame.gameName == gameName);
+  const game = games.find(existingGame => existingGame.gameName == gameName);
   
   if(game)
   {
+    if(!requestIsNew(game.lastUpdated, req.timestamp)) return;
+
     game.blueTurn = !game.blueTurn;
     io.to(gameName).emit('updateGame', game);
     writeGamesToFile(games);
@@ -159,12 +174,14 @@ apiRoutes.get('/:gameName/hardMode', (req, res) => {
   
   const gameName = req.params.gameName;
 
-  let games = readGamesFromFile();
+  const games = readGamesFromFile();
   
-  let game = games.find(existingGame => existingGame.gameName == gameName);
+  const game = games.find(existingGame => existingGame.gameName == gameName);
   
   if(game)
   {
+    if(!requestIsNew(game.lastUpdated, req.timestamp)) return;
+    
     game.hardMode = !game.hardMode;
     io.to(gameName).emit('updateGame', game);
     writeGamesToFile(games);
@@ -175,7 +192,7 @@ apiRoutes.get('/:gameName/hardMode', (req, res) => {
 // Determines winner
 function calculateCardsRemaining(cards)
 {
-  let cardCount = {
+  const cardCount = {
     blueTeam: 0,
     redTeam: 0
   }
@@ -332,6 +349,17 @@ function shuffle(array)
   }
   
   return array;
+}
+
+// Tests to see if the request time is newer than the game's lastUpdated time
+function requestIsNew(gameTime, requestTime)
+{
+  // Both times *should* be in a momentjs readable format
+  if(moment(requestTime).isAfter(moment(gameTime)))
+  {
+    return true;
+  }
+  return false;
 }
 
 function logError(err) {

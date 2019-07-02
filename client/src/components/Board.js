@@ -15,12 +15,7 @@ class Board extends Component
       );
     }
   }
-
-  cardClick(i)
-  {
-    console.log('card' + i +'clcicks')
-  }
-
+  
   render()
   {
     return (
