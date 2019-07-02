@@ -21,7 +21,7 @@ You can play the lastest version of the game here: [codenames.koosvary.com](http
   * May not be curated so mileage may vary.
 * Codenames Pictures - and associated expansions (Marvel, Disney, etc)
   * Again, if you have access to these, please let me know.
-* Removal of save games after a period of inactivity (12 hours or something reasonable).
+* Deep Undercover got an update, possibly with better curated words. If I'm able to get this list I will use these words instead.
 * Anything requested by you that is relatively feasible. I'm happy to receive any feedback.
 
 ### Local installation
