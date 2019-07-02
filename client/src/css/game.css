@@ -1,5 +1,5 @@
 /*! Base game styling */
-#game{width:700px;margin:0 auto;}
+#game{width:700px;margin:0 auto;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 #board{position:relative;font-family: Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif, Verdana,Geneva,Tahoma,sans-serif;}
 #game .red:not(.hidden){color:#d13030;}
 #game .blue:not(.hidden){color:#4183cc;}
