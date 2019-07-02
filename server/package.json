@@ -6,6 +6,7 @@
     "express": "^4.16.3",
     "express-timestamp": "^0.1.4",
     "moment": "^2.24.0",
+    "node-schedule": "^1.3.2",
     "socket.io": "^2.1.1"
   }
 }

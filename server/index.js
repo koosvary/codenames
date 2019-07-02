@@ -4,6 +4,7 @@ const socket = require('socket.io');
 const fs = require('fs');
 const time = require('express-timestamp');
 const moment = require('moment');
+var schedule = require('node-schedule');
 
 const wordList = require('./models/cards');
 
@@ -376,3 +377,19 @@ function writeGamesToFile(games)
 {
   fs.writeFileSync(__dirname + '/models/games.json', JSON.stringify(games, null, 2), err => logError(err));
 }
+
+/* Scheduled functions */
+
+// Checks games every hour for games older than 12 hours, deletes them
+// Sets the rule to search on every 0 minute (start of every hour)
+var rule = new schedule.RecurrenceRule();
+rule.minute = 0;
+
+schedule.scheduleJob(rule, function(){  
+  const games = readGamesFromFile();
+
+  // Filter out any games updated more than 12 hours ago
+  const trimmedGames = games.filter(game => moment(game.lastUpdated).isAfter(moment().subtract(12, 'hours')));
+
+  writeGamesToFile(trimmedGames);
+});
