@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { Router, Route, Switch } from 'react-router-dom';
+import { Router, Route, Switch } from 'react-router';
 import history from './history'
 
 import Game from './components/Game';
@@ -12,8 +12,6 @@ import './css/game.css';
 import './css/menu.css';
 import './css/top-bar.css';
 import './css/bottom-bar.css';
-
-// var gameName = window.location.href.replace(window.location.origin + '/', '').replace('/', '');
 
 const menuRouter = (
   <Router history={history}>

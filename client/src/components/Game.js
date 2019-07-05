@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import {AppState} from 'react-native';
 import io from "socket.io-client";
+import {Router} from 'react-router';
 
 import Board from './Board';
 import { connect } from 'react-redux';
@@ -18,6 +20,11 @@ class Game extends Component
   constructor(props)
   {
     super(props);
+
+    this.state = {
+      // This is to detect when mobile devices are locked/inactive
+      appState: AppState.currentState,
+    }
 
     this.toggleWordPack = this.toggleWordPack.bind(this);
     this.highlightIfClicked = this.highlightIfClicked.bind(this);
@@ -40,6 +47,26 @@ class Game extends Component
     
     this.loadGame(gameName);
   }
+
+  componentDidMount() {
+    AppState.addEventListener('change', this._handleAppStateChange);
+  }
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+  }
+
+  _handleAppStateChange = (nextAppState) => {
+    
+    if (
+      this.state.appState.match(/inactive|background/) &&
+      nextAppState === 'active'
+    ) {
+      // Refresh the page to get the current game state and reconnect sockets
+      window.location.reload();
+    }
+    this.setState({appState: nextAppState});
+  };
 
   render()
   {
