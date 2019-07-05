@@ -30,6 +30,7 @@ export default class Menu extends Component
     gameName = gameName.replace('/', '-')
     gameName = gameName.replace(';', '-')
     gameName = gameName.replace(':', '-')
+    gameName = gameName.toLowerCase();
     document.getElementById('game-name').value = gameName;
   }
 
