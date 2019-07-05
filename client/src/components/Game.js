@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {AppState} from 'react-native';
 import io from "socket.io-client";
-import {Router} from 'react-router';
 
 import Board from './Board';
 import { connect } from 'react-redux';
@@ -20,10 +19,16 @@ class Game extends Component
   constructor(props)
   {
     super(props);
-
+    
     this.state = {
       // This is to detect when mobile devices are locked/inactive
       appState: AppState.currentState,
+
+      // Game name from the URL
+      gameName: window.location.pathname.split('/')[1],
+
+      // Websocket to receive data from the server
+      socket: io.connect(socketUrl),
     }
 
     this.toggleWordPack = this.toggleWordPack.bind(this);
@@ -34,39 +39,16 @@ class Game extends Component
     this.toggleColourblind = this.toggleColourblind.bind(this);
     this.toggleNightMode = this.toggleNightMode.bind(this);
     this.toggleHardMode = this.toggleHardMode.bind(this);
+    this.loadGame = this.loadGame.bind(this);
 
-    // Get game name from URL
-    const gameName = window.location.pathname.split('/')[1];
-
+    
     // Socket room and connection
-    let socket = io.connect(socketUrl);
+    this.state.socket.emit('joinRoom', this.state.gameName);
 
-    socket.emit('joinRoom', gameName);
-
-    socket.on('updateGame', game => props.dispatch(updateGame(game)));
+    this.state.socket.on('updateGame', game => props.dispatch(updateGame(game)));
     
-    this.loadGame(gameName);
+    this.loadGame(this.state.gameName);
   }
-
-  componentDidMount() {
-    AppState.addEventListener('change', this._handleAppStateChange);
-  }
-
-  componentWillUnmount() {
-    AppState.removeEventListener('change', this._handleAppStateChange);
-  }
-
-  _handleAppStateChange = (nextAppState) => {
-    
-    if (
-      this.state.appState.match(/inactive|background/) &&
-      nextAppState === 'active'
-    ) {
-      // Refresh the page to get the current game state and reconnect sockets
-      window.location.reload();
-    }
-    this.setState({appState: nextAppState});
-  };
 
   render()
   {
@@ -253,7 +235,30 @@ class Game extends Component
   toggleHardMode()
   {
     toggleHardMode(this.props.game.gameName);
+  }  
+
+
+  // React Native checks for when a device goes from inactive to active
+  componentDidMount() {
+    AppState.addEventListener('change', this.reconnectToGame);
   }
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this.reconnectToGame);
+  }
+
+  reconnectToGame = (nextAppState) => {
+    
+    if (
+      this.state.appState.match(/inactive|background/) &&
+      nextAppState === 'active'
+    ) {
+      // Reconnect the sockets and load the game's current state
+      this.state.socket.connect(socketUrl);
+      this.loadGame(this.state.gameName);
+    }
+    this.setState({appState: nextAppState});
+  };
 }
 
 export default connect(stateMap)(Game);
