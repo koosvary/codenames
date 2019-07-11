@@ -20,7 +20,11 @@ const defaultGameState = {
   blueCards: 0,
   winner: null,
   blueTeamFirst: false,
-  hardMode: false
+  hardMode: false,
+  duet: {
+    winner: null,
+    cardsLeft: 15,
+  }
 };
 
 // Body Parser allows reading of JSON from POST and/or URL parameters
@@ -310,11 +314,24 @@ function newGame(cardSets = ['VANILLA'])
       team: 'Neutral',
       clicked: false,
       teamClicked: null,
+      duet: {
+        teamOne: 'Neutral',
+        teamTwo: 'Neutral',
+      }
     });
   }
   
-  // Set cards to be red/blue/assassin
+  cards = assignTeamsToCards(cards, blueCards, redCards);
+  cards = assignTeamsToCardsDuet(cards);
   
+  const blueTurn = blueCards > redCards;
+  
+  return Object.assign({}, defaultGameState, {cards, blueCards, redCards, blueTurn, blueTeamFirst: (blueCards > redCards)});
+}
+
+// Set cards to be red/blue/assassin
+function assignTeamsToCards(cards, blueCards, redCards)
+{
   // Blue cards at start of deck
   for (let i = 0; i < blueCards; i++)
   {
@@ -330,12 +347,43 @@ function newGame(cardSets = ['VANILLA'])
   // Assassin after the other cards
   cards[17].team = 'Assassin';
   
+  return shuffle(cards);
+}
+
+// Set cards to be red/blue/assassin
+function assignTeamsToCardsDuet(cards)
+{
+  // Assign cards based for both teams
+  for (let i = 0; i < 25; i++)
+  {
+    // Team One
+    // Assassins
+    if(i == 0 || i == 16 || i == 24)
+    {
+      cards[i].duet.teamOne = 'Assassin';
+    }
+
+    // Agents
+    if(i >= 6 && i <= 14)
+    {
+      cards[i].duet.teamOne = 'Agent';
+    }
+
+    // Team Two
+    // Assassins
+    if(i >= 14 && i <= 16)
+    {
+      cards[i].duet.teamTwo = 'Assassin';
+    }
+
+    // Agents
+    if(i >= 0 && i <= 8)
+    {
+      cards[i].duet.teamOne = 'Agent';
+    }
+  }
   
-  cards = shuffle(cards);
-  
-  const blueTurn = blueCards > redCards;
-  
-  return Object.assign({}, defaultGameState, {cards, blueCards, redCards, blueTurn, blueTeamFirst: (blueCards > redCards)});
+  return shuffle(cards);
 }
 
 // Randomly shuffles an array
