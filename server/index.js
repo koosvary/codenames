@@ -128,24 +128,36 @@ apiRoutes.post('/:gameName/cardClicked', (req, res) => {
 
     let card = game.cards[cardIndex];
     
+    // Click the card for the standard game mode
     // Don't click the card if already clicked or game is over
-    if(game.winner || card.clicked) return;
-
-    card.clicked = true;
-    card.teamClicked = teamClicked
-    
-    const cardsRemaining = calculateCardsRemaining(game.cards);
-
-    game.redCards = cardsRemaining.redTeam;
-    game.blueCards = cardsRemaining.blueTeam;
-
-    game.winner = determineWinner(game.cards);
-
-    // End turn if not the team's card
-    if(game.blueTurn && card.team != "Blue" ||
-      !game.blueTurn && card.team != "Red")
+    if(!(game.winner || card.clicked))
     {
-      game.blueTurn = !game.blueTurn;
+      card.clicked = true;    
+      card.teamClicked = teamClicked;
+      
+      const cardsRemaining = calculateCardsRemaining(game.cards);
+  
+      game.redCards = cardsRemaining.redTeam;
+      game.blueCards = cardsRemaining.blueTeam;
+  
+      game.winner = determineWinner(game.cards);
+  
+      // End turn if not the team's card
+      if(game.blueTurn && card.team != "Blue" ||
+        !game.blueTurn && card.team != "Red")
+      {
+        game.blueTurn = !game.blueTurn;
+      }
+    }
+
+    // Click the card for the duet game mode
+    if(!(game.duet.winner || card.duet.clicked))
+    {
+      card.duet.clicked = true;
+      
+      game.duet.cardsLeft = calculateCardsRemainingDuet(game.cards);
+  
+      game.duet.winner = determineWinnerDuet(game.cards);
     }
 
     io.to(gameName).emit('updateGame', game);
@@ -201,17 +213,28 @@ function calculateCardsRemaining(cards)
     blueTeam: 0,
     redTeam: 0
   }
-
+  
   if(cards.length)
   {
     const blueCardsRemaining = cards.filter(card => card.team === 'Blue' && !card.clicked);
     cardCount.blueTeam = blueCardsRemaining.length;
-  
+    
     const redCardsRemaining = cards.filter(card => card.team === 'Red' && !card.clicked);
     cardCount.redTeam = redCardsRemaining.length;
   }
-
+  
   return cardCount;
+}
+
+function calculateCardsRemainingDuet(cards)
+{
+  if(cards.length)
+  {
+    const duetCardsRemaining = cards.filter(card => (card.duet.teamOne === 'Agent' || card.duet.teamTwo === 'Agent') && !card.clicked);
+    return duetCardsRemaining.length;
+  }
+  
+  return null;
 }
 
 function determineWinner(cards)
@@ -242,6 +265,32 @@ function determineWinner(cards)
     if (cardsRemaining.redTeam === 0)
     {
       return 'Red';
+    }
+  }
+  
+  return null;
+}
+
+function determineWinnerDuet(cards)
+{
+  if (cards.length)
+  {
+    // Theres three assassins, but we only need to know find one that was clicked
+    // The assassins exist only if the other member doesn't see an agent (because they're agents)
+    const assassinCard = cards.find(card => ((card.duet.teamOne === 'Assassin' && card.duet.teamTwo !== 'Agent')
+                                            || (card.duet.teamOne !== 'Agent' && card.duet.teamTwo === 'Assassin'))
+                                            && card.clicked);
+    
+    if(assassinCard)
+    {
+      return 'Lose';
+    }
+    
+    const cardsRemaining = calculateCardsRemainingDuet(cards);
+    
+    if(cardsRemaining === 0)
+    {
+      return 'Win';
     }
   }
   
@@ -315,6 +364,7 @@ function newGame(cardSets = ['VANILLA'])
       clicked: false,
       teamClicked: null,
       duet: {
+        clicked: null,
         teamOne: 'Neutral',
         teamTwo: 'Neutral',
       }
