@@ -7,6 +7,11 @@ export default function reducer(state = {
   winner: null,
   blueTeamFirst: false,
   hardMode: false,
+  duetMode: false,
+  duet: {
+    winner: null,
+    cardsLeft: 15,
+  }
 }, action)
 {
   switch (action.type)

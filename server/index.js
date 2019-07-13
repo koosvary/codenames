@@ -21,6 +21,7 @@ const defaultGameState = {
   winner: null,
   blueTeamFirst: false,
   hardMode: false,
+  duetMode: false,
   duet: {
     winner: null,
     cardsLeft: 15,
@@ -99,7 +100,7 @@ apiRoutes.post('/:gameName/newGame', (req, res) => {
     game.lastUpdated = req.timestamp;
     
     // Update existing game
-    game = Object.assign(gameFromStorage, game, {hardMode: gameFromStorage.hardMode});
+    game = Object.assign(gameFromStorage, game, {hardMode: gameFromStorage.hardMode}, {duetMode: gameFromStorage.duetMode});
   }
   else
   {
@@ -205,6 +206,26 @@ apiRoutes.get('/:gameName/hardMode', (req, res) => {
   }
 });
 
+apiRoutes.get('/:gameName/duetMode', (req, res) => {
+  
+  res.sendStatus(200);
+  
+  const gameName = req.params.gameName;
+
+  const games = readGamesFromFile();
+  
+  const game = games.find(existingGame => existingGame.gameName == gameName);
+  
+  if(game)
+  {
+    if(!requestIsNew(game.lastUpdated, req.timestamp)) return;
+    
+    game.duetMode = !game.duetMode;
+    io.to(gameName).emit('updateGame', game);
+    writeGamesToFile(games);
+  }
+});
+
 /* Helper functions */
 // Determines winner
 function calculateCardsRemaining(cards)
@@ -230,7 +251,7 @@ function calculateCardsRemainingDuet(cards)
 {
   if(cards.length)
   {
-    const duetCardsRemaining = cards.filter(card => (card.duet.teamOne === 'Agent' || card.duet.teamTwo === 'Agent') && !card.clicked);
+    const duetCardsRemaining = cards.filter(card => card.duet.trueValue === 'Agent' && !card.duet.clicked);
     return duetCardsRemaining.length;
   }
   
@@ -277,20 +298,18 @@ function determineWinnerDuet(cards)
   {
     // Theres three assassins, but we only need to know find one that was clicked
     // The assassins exist only if the other member doesn't see an agent (because they're agents)
-    const assassinCard = cards.find(card => ((card.duet.teamOne === 'Assassin' && card.duet.teamTwo !== 'Agent')
-                                            || (card.duet.teamOne !== 'Agent' && card.duet.teamTwo === 'Assassin'))
-                                            && card.clicked);
+    const assassinCard = cards.find(card => card.duet.trueValue === 'Assassin' && card.duet.clicked);
     
     if(assassinCard)
     {
-      return 'Lose';
+      return false;
     }
     
     const cardsRemaining = calculateCardsRemainingDuet(cards);
     
     if(cardsRemaining === 0)
     {
-      return 'Win';
+      return true;
     }
   }
   
@@ -367,6 +386,7 @@ function newGame(cardSets = ['VANILLA'])
         clicked: null,
         teamOne: 'Neutral',
         teamTwo: 'Neutral',
+        trueValue: 'Neutral',
       }
     });
   }
@@ -429,8 +449,19 @@ function assignTeamsToCardsDuet(cards)
     // Agents
     if(i >= 0 && i <= 8)
     {
-      cards[i].duet.teamOne = 'Agent';
+      cards[i].duet.teamTwo = 'Agent';
     }
+
+    // Determine true value of card
+    if(cards[i].duet.teamOne === 'Agent' || cards[i].duet.teamTwo === 'Agent')
+    {
+      cards[i].duet.trueValue = 'Agent'
+		}
+		// For non-agent cards, any card that has an assassin IS an assassin
+		else if(cards[i].duet.teamOne === 'Assassin' || cards[i].duet.teamTwo === 'Assassin')
+		{
+      cards[i].duet.trueValue = 'Assassin'
+		}
   }
   
   return shuffle(cards);

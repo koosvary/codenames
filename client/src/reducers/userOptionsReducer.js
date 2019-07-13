@@ -1,7 +1,7 @@
 export default function reducer(state = {
   role: 'Player',
   colourblind: false,
-  hideUrl: true,
+  duetTeamOne: true,
   selectedExpansions: ['VANILLA']
 }, action)
 {
@@ -17,9 +17,9 @@ export default function reducer(state = {
     {
       return state = {...state, colourblind: !state.colourblind};
     }
-    case 'TOGGLE_URL_HIDE':
+    case 'TOGGLE_DUET_TEAM':
     {
-      return state = {...state, hideUrl: !state.hideUrl};
+      return state = {...state, duetTeamOne: !state.duetTeamOne};
     }
     case 'TOGGLE_EXPANSION':
     {

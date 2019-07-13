@@ -44,3 +44,8 @@ export function toggleHardMode(gameName)
 {
   axios.get(gameName + '/hardMode');
 }
+
+export function toggleDuet(gameName)
+{
+  axios.get(gameName + '/duetMode');
+}

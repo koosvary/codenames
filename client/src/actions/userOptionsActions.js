@@ -23,3 +23,9 @@ export function toggleNightMode() {
     type: "TOGGLE_NIGHT_MODE",
   }
 }
+
+export function toggleDuetTeam() {
+  return {
+    type: "TOGGLE_DUET_TEAM",
+  }
+}

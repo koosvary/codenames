@@ -5,8 +5,8 @@ import io from "socket.io-client";
 import Board from './Board';
 import { connect } from 'react-redux';
 
-import { changeRole, toggleExpansion, toggleColourblind, toggleNightMode } from '../actions/userOptionsActions';
-import { updateGame, loadGame, startNewGame, endTurn, cardClick, toggleHardMode } from '../actions/gameActions';
+import { changeRole, toggleExpansion, toggleColourblind, toggleNightMode, toggleDuetTeam } from '../actions/userOptionsActions';
+import { updateGame, loadGame, startNewGame, endTurn, cardClick, toggleHardMode, toggleDuet } from '../actions/gameActions';
 import { socketUrl } from '../config/serverUrl';
 
 const stateMap = (store) => {
@@ -39,12 +39,14 @@ class Game extends Component
     this.toggleColourblind = this.toggleColourblind.bind(this);
     this.toggleNightMode = this.toggleNightMode.bind(this);
     this.toggleHardMode = this.toggleHardMode.bind(this);
+    this.toggleDuet = this.toggleDuet.bind(this);
+    this.toggleDuetTeam = this.toggleDuetTeam.bind(this);
     this.loadGame = this.loadGame.bind(this);
 
     
     // Socket room and connection
     this.state.socket.emit('joinRoom', this.state.gameName);
-
+    
     this.state.socket.on('updateGame', game => props.dispatch(updateGame(game)));
     
     this.loadGame(this.state.gameName);
@@ -54,8 +56,10 @@ class Game extends Component
   {
     const winner = this.props.game.winner;
 
+    const game = this.createScoreboard();
+
     let status;
-    const playingTeam = (this.props.game.blueTurn ? 'blue' : 'red');
+    let playingTeam = (this.props.game.blueTurn ? 'blue' : 'red');
     if (winner)
     {
       status = winner + ' team wins!';
@@ -65,24 +69,47 @@ class Game extends Component
       status = (this.props.game.blueTurn ? 'Blue' : 'Red') + ' team\'s turn';
     }
 
-    const game = this.createScoreboard();
+    // Duet
+    if(this.props.game.duetMode)
+    {
+      playingTeam = 'green';
+      
+      if(this.props.game.duet.winner === true)
+      {
+        status = 'You win!'
+      }
+      else if(this.props.game.duet.winner === false)
+      {
+        status = 'You lose!';
+      }
+      else
+      {
+        status = game.duetScore + ' cards remaining...'
+      }
+    }
 
     return (
       <div className={
-          (this.props.options.role === 'Spymaster' ? 'spymaster' : 'player') + 
+          (!this.props.game.duetMode && this.props.options.role === 'Spymaster' ? 'spymaster' : 'player') + // Turn off spymaster when in duet to allow clicking
           (this.props.options.colourblind ? ' colourblind' : '') + 
           (this.props.options.nightMode ? ' night-mode' : '') +
-          (this.props.game.hardMode ? ' hard-mode' : '')
+          (this.props.game.hardMode ? ' hard-mode' : '') +
+          (this.props.game.duetMode ? ' duet' : '') +
+          (this.props.options.duetTeamOne ? ' team-one' : ' team-two')
         } id="game">
         <div id="board">
           <div id="top-bar">
             <div id="score">
-              <span className={game.firstTeamColour}>{game.firstTeamScore}</span>
-              <span>&ndash;</span>
-              <span className={game.secondTeamColour}>{game.secondTeamScore}</span>
+            {!this.props.game.duetMode &&
+              <React.Fragment>
+                <span className={game.firstTeamColour}>{game.firstTeamScore}</span>
+                <span>&ndash;</span>
+                <span className={game.secondTeamColour}>{game.secondTeamScore}</span>
+              </React.Fragment>
+            }
             </div>
             <div id="status" className={playingTeam}>{status}</div>
-            {!this.props.game.winner && <button id="end-turn" onClick={this.endTurn}>End {playingTeam}&apos;s turn</button>}
+            {!this.props.game.duetMode && !this.props.game.winner && <button id="end-turn" onClick={this.endTurn}>End {playingTeam}&apos;s turn</button>}
           </div>
           <Board
             cards={this.props.game.cards}
@@ -104,11 +131,20 @@ class Game extends Component
                   <span className="slider round"></span>
                 </label>
               </div> */}
-            </div>
-            <div className="right">
               <div className="switch-input">
                 <label className="switch">
-                    <input type="checkbox" value={this.props.options.role === 'Spymaster' ? 'Player' : 'Spymaster'} onChange={this.changeRole} />
+                  <input type="checkbox" onChange={this.toggleDuet} checked={!!this.props.game.duetMode}/>
+                  <span className="slider round"></span>
+                </label>
+                <div className="switch-label">Duet</div>
+              </div>
+            </div>
+            <div className="right">
+              {!this.props.game.duetMode ?
+              <React.Fragment>
+              <div className="switch-input">
+                <label className="switch">
+                    <input type="checkbox" value={this.props.options.role === 'Spymaster' ? 'Player' : 'Spymaster'} onChange={this.changeRole} checked={this.props.options.role === 'Spymaster'} />
                   <span className="slider round"></span>
                 </label>
                 <div className="switch-label">Spymaster</div>
@@ -120,6 +156,19 @@ class Game extends Component
                 </label>
                 <div className="switch-label">Hard mode</div>
               </div>
+              </React.Fragment>
+              :
+              <React.Fragment>
+              <div className="switch-input">
+                <div className="switch-label">&nbsp;Team Two</div>
+                <label className="switch">
+                  <input type="checkbox" onChange={this.toggleDuetTeam} checked={!this.props.options.duetTeamOne}/>
+                  <span className="slider round"></span>
+                </label>
+                <div className="switch-label">Team One</div>
+              </div>
+              </React.Fragment>
+              }
               <button id="next-game" onClick={this.newGame}>Next game</button>
             </div>
           </div>
@@ -171,7 +220,10 @@ class Game extends Component
       secondTeamScore = this.props.game.blueCards;
     }
 
-    return {firstTeamColour, firstTeamScore, secondTeamColour, secondTeamScore};
+    // Duet
+    let duetScore = this.props.game.duet.cardsLeft;
+
+    return {firstTeamColour, firstTeamScore, secondTeamColour, secondTeamScore, duetScore};
   }
 
   changeRole(event)
@@ -179,6 +231,11 @@ class Game extends Component
     let el = event.target;
 
     this.props.dispatch(changeRole(el.value))
+  }
+
+  toggleDuetTeam()
+  {
+    this.props.dispatch(toggleDuetTeam());
   }
 
   toggleColourblind()
@@ -217,7 +274,7 @@ class Game extends Component
   {
     const cards = this.props.game.cards.slice();
 
-    if (this.props.game.winner || cards[cardIndex].clicked || this.props.options.role === 'Spymaster')
+    if (cards[cardIndex].clicked || this.props.options.role === 'Spymaster')
     {
       return;
     }
@@ -237,6 +294,10 @@ class Game extends Component
     toggleHardMode(this.props.game.gameName);
   }  
 
+  toggleDuet()
+  {
+    toggleDuet(this.props.game.gameName);
+  }  
 
   // React Native checks for when a device goes from inactive to active
   componentDidMount() {
