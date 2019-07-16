@@ -60,6 +60,8 @@ class Game extends Component
 
     let status;
     let playingTeam = (this.props.game.blueTurn ? 'blue' : 'red');
+    let playingTeamColour = playingTeam;
+
     if (winner)
     {
       status = winner + ' team wins!';
@@ -72,20 +74,28 @@ class Game extends Component
     // Duet
     if(this.props.game.duetMode)
     {
-      playingTeam = 'green';
+      playingTeamColour = 'green';
+      playingTeam = (this.props.game.duet.teamOneTurn ? 'team one' : 'team two');
+
       
-      if(this.props.game.duet.winner === true)
-      {
-        status = 'You win!'
-      }
-      else if(this.props.game.duet.winner === false)
-      {
-        status = 'You lose!';
-      }
-      else
-      {
-        status = game.duetScore + ' cards remaining...'
-      }
+        if(this.props.game.duet.winner === true)
+        {
+          status = 'You win!'
+        }
+        else if(this.props.game.duet.winner === false)
+        {
+          status = 'You lose!';
+        }
+        else if(this.props.game.duet.timerTokens <= 0)  
+        {
+          status = 'Out of turns! Sudden death!\n' +
+                    game.duetScore + ' cards remaining...';
+        }
+        else
+        {
+          status = 'Team ' + (this.props.game.duet.teamOneTurn ? 'one' : 'two') + '\'s turn\n' +
+                    game.duetScore + ' cards remaining...'
+        }
     }
 
     return (
@@ -100,16 +110,22 @@ class Game extends Component
         <div id="board">
           <div id="top-bar">
             <div id="score">
-            {!this.props.game.duetMode &&
+            {!this.props.game.duetMode ?
               <React.Fragment>
                 <span className={game.firstTeamColour}>{game.firstTeamScore}</span>
                 <span>&ndash;</span>
                 <span className={game.secondTeamColour}>{game.secondTeamScore}</span>
               </React.Fragment>
+              :
+              this.props.game.duet.winner === null &&
+              <React.Fragment>
+                <span className="green">{this.props.game.duet.timerTokens} turns left</span><br />
+                <span className="green">{this.props.game.duet.bystanders} errors allowed</span>
+              </React.Fragment>
             }
             </div>
-            <div id="status" className={playingTeam}>{status}</div>
-            {!this.props.game.duetMode && !this.props.game.winner && <button id="end-turn" onClick={this.endTurn}>End {playingTeam}&apos;s turn</button>}
+            <div id="status" className={playingTeamColour}>{status}</div>
+            {!this.props.game.winner && this.props.game.duet.winner === null && <button id="end-turn" onClick={this.endTurn}>End {playingTeam}&apos;s turn</button>}
           </div>
           <Board
             cards={this.props.game.cards}
@@ -279,9 +295,20 @@ class Game extends Component
       return;
     }
 
-    const teamClicked = this.props.game.blueTurn ? 'Blue' : 'Red';
+    if(this.props.game.duetMode)
+    {
+      if(((this.props.game.duet.teamOneTurn && !this.props.options.duetTeamOne) ||
+        (!this.props.game.duet.teamOneTurn && this.props.options.duetTeamOne)) &&
+          this.props.game.duet.timerTokens !== 0)
+        {
+          return;
+        }
+    }
 
-    cardClick(this.props.game.gameName, cardIndex, teamClicked);
+    const teamClicked = this.props.game.blueTurn ? 'Blue' : 'Red';
+    const duetTeamClicked = this.props.options.duetTeamOne ? 'One' : 'Two';
+
+    cardClick(this.props.game.gameName, cardIndex, teamClicked, duetTeamClicked);
   }
 
   endTurn()

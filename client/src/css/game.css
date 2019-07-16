@@ -26,17 +26,17 @@
 
 /*! Duet game styling */
 #game .green{color:#0e9c2d;}
-#game.duet.team-one #board .card.team-one-agent.duet-hidden{color:#0e9c2d;}
-#game.duet.team-one #board .card.team-one-assassin.duet-hidden{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
-#game.duet.team-one #board .card.team-one-neutral.duet-hidden{background:#DDD;}
+#game.duet.team-one #board .card.team-one-agent{color:#0e9c2d;}
+#game.duet.team-one #board .card.team-one-assassin{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
+#game.duet.team-one #board .card.team-one-neutral{background:#DDD;}
 
-#game.duet.team-two #board .card.team-two-agent.duet-hidden{color:#0e9c2d;}
-#game.duet.team-two #board .card.team-two-assassin.duet-hidden{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
-#game.duet.team-two #board .card.team-two-neutral.duet-hidden{background:#DDD;}
+#game.duet.team-two #board .card.team-two-agent{color:#0e9c2d;}
+#game.duet.team-two #board .card.team-two-assassin{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
+#game.duet.team-two #board .card.team-two-neutral{background:#DDD;}
 
-#game.duet #board .card.true-value-agent.duet-revealed{background:#0e9c2d;color:#fff;}
-#game.duet #board .card.true-value-assassin.duet-revealed{background:#000;color:#fff;}
-#game.duet #board .card.true-value-neutral.duet-revealed{background:#ede2cc;color:#000;}
+#game.duet #board .card.reveal-neutral{background:#ede2cc !important;color:#000}
+#game.duet #board .card.reveal-assassin{background:#000 !important;color:#fff !important;}
+#game.duet #board .card.reveal-agent{background:#0e9c2d !important;color:#fff !important;}
 /*! End duet styling */
 
 /*! Colourblind scheme */

@@ -32,11 +32,12 @@ export function endTurn(gameName)
   axios.get(gameName + '/endTurn');
 }
 
-export function cardClick(gameName, cardIndex, teamClicked)
+export function cardClick(gameName, cardIndex, teamClicked, duetTeamClicked)
 {
   axios.post(gameName + '/cardClicked', {
     cardIndex,
-    teamClicked
+    teamClicked,
+    duetTeamClicked
   });
 }
 

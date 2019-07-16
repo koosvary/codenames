@@ -25,11 +25,11 @@ export default function Card(props)
 
   // Duet
   // Player One
-  if(props.info.duet.teamOne === 'Agent')
+  if(props.info.duet.teamOneValue === 'Agent')
   {
     cssClass += ' team-one-agent';
   }
-  else if(props.info.duet.teamOne === 'Assassin')
+  else if(props.info.duet.teamOneValue === 'Assassin')
   {
     cssClass += ' team-one-assassin';
   }
@@ -39,11 +39,11 @@ export default function Card(props)
   }
 
   // Player Two
-  if(props.info.duet.teamTwo === 'Agent')
+  if(props.info.duet.teamTwoValue === 'Agent')
   {
     cssClass += ' team-two-agent';
   }
-  else if(props.info.duet.teamTwo === 'Assassin')
+  else if(props.info.duet.teamTwoValue === 'Assassin')
   {
     cssClass += ' team-two-assassin';
   }
@@ -52,21 +52,39 @@ export default function Card(props)
     cssClass += ' team-two-neutral';
   }
 
-  // True card value
-  if(props.info.duet.trueValue === 'Agent')
+  if(props.info.duet.teamOneClicked)
   {
-    cssClass += ' true-value-agent';
+    if(props.info.duet.teamTwoValue === 'Agent')
+    {
+      cssClass += ' reveal-agent';
+    }
+    else if(props.info.duet.teamTwoValue === 'Assassin')
+    {
+      cssClass += ' reveal-assassin';
+    }
+    else
+    {
+      cssClass += ' reveal-neutral';
+    }
   }
-  else if(props.info.duet.trueValue === 'Assassin')
+  
+  // Also check team two's click as it may overwrite the other team's click
+  if(props.info.duet.teamTwoClicked)
   {
-    cssClass += ' true-value-assassin';
-  }
-  else
-  {
-    cssClass += ' true-value-neutral';
+    if(props.info.duet.teamOneValue === 'Agent')
+    {
+      cssClass += ' reveal-agent';
+    }
+    else if(props.info.duet.teamOneValue === 'Assassin')
+    {
+      cssClass += ' reveal-assassin';
+    }
+    else
+    {
+      cssClass += ' reveal-neutral';
+    }
   }
 
-  cssClass += (props.info.duet.clicked ? ' duet-revealed' : ' duet-hidden');
 
   return (
     <div className={"card" + cssClass} onClick={props.onClick}>

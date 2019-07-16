@@ -23,8 +23,11 @@ const defaultGameState = {
   hardMode: false,
   duetMode: false,
   duet: {
+    teamOneTurn: true,
     winner: null,
     cardsLeft: 15,
+    timerTokens: 9,
+    bystanders: 9
   }
 };
 
@@ -84,10 +87,17 @@ apiRoutes.post('/:gameName/newGame', (req, res) => {
 
   const gameName = req.params.gameName;
   const cardSets = req.body.expansions;
+  const duetTurns = req.body.duetTurns;
+  const duetBystanders = req.body.duetBystanders;
 
   const games = readGamesFromFile();
 
-  let game = Object.assign({}, newGame(cardSets), {gameName})
+  let game = Object.assign({}, newGame(cardSets), {gameName});
+
+  if(duetTurns && duetBystanders)
+  {
+    game = Object.assign(game, {duet: {duetTurns, duetBystanders}});
+  }
 
   const gameFromStorage = games.find(existingGame => existingGame.gameName == game.gameName);  
   
@@ -118,6 +128,7 @@ apiRoutes.post('/:gameName/cardClicked', (req, res) => {
   const gameName = req.params.gameName;
   const cardIndex = req.body.cardIndex;
   const teamClicked = req.body.teamClicked;
+  const duetTeamClicked = req.body.duetTeamClicked;
 
   const games = readGamesFromFile();
 
@@ -129,36 +140,96 @@ apiRoutes.post('/:gameName/cardClicked', (req, res) => {
 
     let card = game.cards[cardIndex];
     
-    // Click the card for the standard game mode
-    // Don't click the card if already clicked or game is over
-    if(!(game.winner || card.clicked))
+    if(!game.duetMode) //Standard
     {
-      card.clicked = true;    
-      card.teamClicked = teamClicked;
-      
-      const cardsRemaining = calculateCardsRemaining(game.cards);
-  
-      game.redCards = cardsRemaining.redTeam;
-      game.blueCards = cardsRemaining.blueTeam;
-  
-      game.winner = determineWinner(game.cards);
-  
-      // End turn if not the team's card
-      if(game.blueTurn && card.team != "Blue" ||
-        !game.blueTurn && card.team != "Red")
+      // Click the card for the standard game mode
+      // Don't click the card if already clicked or game is over
+      if(!(game.winner || card.clicked))
       {
-        game.blueTurn = !game.blueTurn;
+        card.clicked = true;    
+        card.teamClicked = teamClicked;
+        
+        const cardsRemaining = calculateCardsRemaining(game.cards);
+    
+        game.redCards = cardsRemaining.redTeam;
+        game.blueCards = cardsRemaining.blueTeam;
+    
+        game.winner = determineWinner(game.cards);
+    
+        // End turn if not the team's card
+        if(game.blueTurn && card.team != "Blue" ||
+          !game.blueTurn && card.team != "Red")
+        {
+          game.blueTurn = !game.blueTurn;
+        }
       }
     }
-
-    // Click the card for the duet game mode
-    if(!(game.duet.winner || card.duet.clicked))
+    else // Duet
     {
-      card.duet.clicked = true;
-      
-      game.duet.cardsLeft = calculateCardsRemainingDuet(game.cards);
-  
-      game.duet.winner = determineWinnerDuet(game.cards);
+      // Click the card for the duet game mode
+      if(!game.duet.winner)
+      {
+        if(duetTeamClicked === 'One' && !card.duet.teamOneClicked)
+        {
+          card.duet.teamOneClicked = true;
+
+          if(card.duet.teamTwoValue !== 'Agent')
+          {
+            if(game.duet.timerTokens <= 0)
+            {
+              game.duet.winner = false;
+            }
+            else
+            { 
+              if(game.duet.bystanders === 0)
+              {
+                game.duet.timerTokens -= 2;
+              }
+              else
+              {
+                game.duet.bystanders--;
+                game.duet.timerTokens--;
+              }
+            }
+
+            game.duet.teamOneTurn = !game.duet.teamOneTurn;
+          }
+        }
+        else if(duetTeamClicked === 'Two' && !card.duet.teamTwoClicked)
+        {
+          card.duet.teamTwoClicked = true;
+
+          if(card.duet.teamOneValue !== 'Agent')
+          {
+            if(game.duet.timerTokens <= 0)
+            {
+              game.duet.winner = false;
+            }
+            else
+            { 
+              if(game.duet.bystanders === 0)
+              {
+                game.duet.timerTokens -= 2;
+              }
+              else
+              {
+                game.duet.bystanders--;
+                game.duet.timerTokens--;
+              }
+            }
+
+            game.duet.teamOneTurn = !game.duet.teamOneTurn;
+          }
+        }
+        
+        game.duet.cardsLeft = calculateCardsRemainingDuet(game.cards);
+        
+        // Recheck since winner may get set
+        if(game.duet.winner === null)
+        {
+          game.duet.winner = determineWinnerDuet(game.cards);
+        }
+      }
     }
 
     io.to(gameName).emit('updateGame', game);
@@ -180,7 +251,22 @@ apiRoutes.get('/:gameName/endTurn', (req, res) => {
   {
     if(!requestIsNew(game.lastUpdated, req.timestamp)) return;
 
-    game.blueTurn = !game.blueTurn;
+    if(!game.duetMode)
+    {
+      game.blueTurn = !game.blueTurn;
+    }
+    else // Duet
+    {
+      game.duet.teamOneTurn = !game.duet.teamOneTurn;
+      game.duet.timerTokens--;
+      
+      // Can't have more errors allowed than turns
+      if(game.duet.bystanders > game.duet.timerTokens)
+      {
+        game.duet.bystanders--;
+      }
+    }
+    
     io.to(gameName).emit('updateGame', game);
     writeGamesToFile(games);
   }
@@ -251,7 +337,33 @@ function calculateCardsRemainingDuet(cards)
 {
   if(cards.length)
   {
-    const duetCardsRemaining = cards.filter(card => card.duet.trueValue === 'Agent' && !card.duet.clicked);
+    const duetCardsRemaining = cards.filter(card => {
+      // Check if agent for team one
+      if(card.duet.teamOneValue === 'Agent')
+      {
+        // Check that team two hasn't clicked it yet
+        if(card.duet.teamTwoClicked)
+        {
+          return false;
+        }
+
+        // If not clicked by team two, check it's not also an agent for them
+        if(card.duet.teamTwoValue === 'Agent')
+        {
+          // Check that team one also hasn't clicked this agent
+          if(card.duet.teamOneClicked)
+          {
+            return false;
+          }
+        }
+
+        // This agent yet to be clicked by other teams
+        return true;
+      }
+      // Is agent for only team two, just check it hasn't been clicked yet
+      else return (card.duet.teamTwoValue === 'Agent' && !card.duet.teamOneClicked);
+    });
+
     return duetCardsRemaining.length;
   }
   
@@ -298,7 +410,8 @@ function determineWinnerDuet(cards)
   {
     // Theres three assassins, but we only need to know find one that was clicked
     // The assassins exist only if the other member doesn't see an agent (because they're agents)
-    const assassinCard = cards.find(card => card.duet.trueValue === 'Assassin' && card.duet.clicked);
+    const assassinCard = cards.find(card => ((card.duet.teamOneValue === 'Assassin' && card.duet.teamTwoClicked) ||
+                                             (card.duet.teamTwoValue === 'Assassin' && card.duet.teamOneClicked)));
     
     if(assassinCard)
     {
@@ -383,10 +496,10 @@ function newGame(cardSets = ['VANILLA'])
       clicked: false,
       teamClicked: null,
       duet: {
-        clicked: null,
-        teamOne: 'Neutral',
-        teamTwo: 'Neutral',
-        trueValue: 'Neutral',
+        teamOneClicked: false,
+        teamTwoClicked: false,
+        teamOneValue: 'Neutral',
+        teamTwoValue: 'Neutral',
       }
     });
   }
@@ -430,38 +543,27 @@ function assignTeamsToCardsDuet(cards)
     // Assassins
     if(i == 0 || i == 16 || i == 24)
     {
-      cards[i].duet.teamOne = 'Assassin';
+      cards[i].duet.teamOneValue = 'Assassin';
     }
 
     // Agents
     if(i >= 6 && i <= 14)
     {
-      cards[i].duet.teamOne = 'Agent';
+      cards[i].duet.teamOneValue = 'Agent';
     }
 
     // Team Two
     // Assassins
     if(i >= 14 && i <= 16)
     {
-      cards[i].duet.teamTwo = 'Assassin';
+      cards[i].duet.teamTwoValue = 'Assassin';
     }
 
     // Agents
     if(i >= 0 && i <= 8)
     {
-      cards[i].duet.teamTwo = 'Agent';
+      cards[i].duet.teamTwoValue = 'Agent';
     }
-
-    // Determine true value of card
-    if(cards[i].duet.teamOne === 'Agent' || cards[i].duet.teamTwo === 'Agent')
-    {
-      cards[i].duet.trueValue = 'Agent'
-		}
-		// For non-agent cards, any card that has an assassin IS an assassin
-		else if(cards[i].duet.teamOne === 'Assassin' || cards[i].duet.teamTwo === 'Assassin')
-		{
-      cards[i].duet.trueValue = 'Assassin'
-		}
   }
   
   return shuffle(cards);

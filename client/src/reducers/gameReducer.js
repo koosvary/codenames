@@ -9,8 +9,11 @@ export default function reducer(state = {
   hardMode: false,
   duetMode: false,
   duet: {
+    teamOneTurn: true,
     winner: null,
     cardsLeft: 15,
+    timerTokens: 9,
+    bystanders: 9
   }
 }, action)
 {
