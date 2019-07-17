@@ -3,6 +3,12 @@
 #bottom-bar .right{float:right}
 #bottom-bar button{padding:5px;margin-top:5px;border:1px #CCC solid;background:#DDD;cursor:pointer;float: right;}
 #bottom-bar #next-game{margin-left:10px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px}
+
+.duet #bottom-bar{min-height: 145px;}
+
+#bottom-bar .right .number-input .react-numeric-input{float:right;position: relative;margin: 7px 0 0 5px;}
+#bottom-bar .right .number-input label{line-height: 35px;vertical-align:middle;float:right}
+
 /*! Slider checkboxes */
 #bottom-bar .switch-input{height:35px;position: relative;vertical-align: middle;}
 #bottom-bar .switch-input .switch-label{position:relative;display:block;line-height:35px;float:right}

@@ -19,11 +19,13 @@ export function updateGame(game)
   };
 }
 
-export function startNewGame(gameName, expansions)
+export function startNewGame(gameName, expansions, duetTurns, duetBystanders)
 {
   axios.post(gameName + '/newGame', {
     gameName,
-    expansions
+    expansions,
+    duetTurns,
+    duetBystanders,
   });
 }
 

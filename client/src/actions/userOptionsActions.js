@@ -29,3 +29,17 @@ export function toggleDuetTeam() {
     type: "TOGGLE_DUET_TEAM",
   }
 }
+
+export function changeDuetTurns(turns) {
+  return {
+    type: "CHANGE_DUET_TURNS",
+    turns,
+  }
+}
+
+export function changeDuetMistakes(mistakes) {
+  return {
+    type: "CHANGE_DUET_MISTAKES",
+    mistakes,
+  }
+}

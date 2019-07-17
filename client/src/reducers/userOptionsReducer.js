@@ -2,15 +2,16 @@ export default function reducer(state = {
   role: 'Player',
   colourblind: false,
   duetTeamOne: true,
-  selectedExpansions: ['VANILLA']
+  selectedExpansions: ['VANILLA'],
+  duetTimerTokens: null,
+  duetMistakesAllowed: null,
 }, action)
 {
   switch(action.type)
   {
     case 'CHANGE_ROLE':
     {
-      const role = action.role;
-      console.log(role)
+      const {role} = action;
       return state = {...state, role};
     }
     case 'TOGGLE_COLOURBLIND':
@@ -35,6 +36,16 @@ export default function reducer(state = {
       }
 
       return state = {...state, selectedExpansions};
+    }
+    case 'CHANGE_DUET_TURNS':
+    {
+      const {turns} = action;
+      return state = {...state, duetTimerTokens: turns};
+    }
+    case 'CHANGE_DUET_MISTAKES':
+    {
+      const {mistakes} = action;
+      return state = {...state, duetMistakesAllowed: mistakes};
     }
     default:
     {

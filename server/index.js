@@ -88,7 +88,7 @@ apiRoutes.post('/:gameName/newGame', (req, res) => {
   const gameName = req.params.gameName;
   const cardSets = req.body.expansions;
   const duetTurns = req.body.duetTurns;
-  const duetBystanders = req.body.duetBystanders;
+  const duetBystanders = (duetTurns >= req.body.duetBystanders ? req.body.duetBystanders : duetTurns); // Make sure there aren't more bystanders than turns
 
   const games = readGamesFromFile();
 
@@ -96,7 +96,7 @@ apiRoutes.post('/:gameName/newGame', (req, res) => {
 
   if(duetTurns && duetBystanders)
   {
-    game = Object.assign(game, {duet: {duetTurns, duetBystanders}});
+    game = Object.assign(game, {duet: {...game.duet, timerTokens: duetTurns, bystanders: duetBystanders}});
   }
 
   const gameFromStorage = games.find(existingGame => existingGame.gameName == game.gameName);  
@@ -166,31 +166,43 @@ apiRoutes.post('/:gameName/cardClicked', (req, res) => {
     }
     else // Duet
     {
+      
+      
       // Click the card for the duet game mode
       if(!game.duet.winner)
       {
+				function decrementTurns()
+				{
+          if(game.duet.timerTokens <= 0)
+          {
+            game.duet.winner = false;
+          }
+          else
+          { 
+            if(game.duet.bystanders === 0)
+            {
+              game.duet.timerTokens -= 2;
+
+              if(game.duet.timerTokens > 0)
+              {
+                game.duet.timerTokens = 0;
+              }
+            }
+            else
+            {
+              game.duet.bystanders--;
+              game.duet.timerTokens--;
+            }
+          }
+        }
+
         if(duetTeamClicked === 'One' && !card.duet.teamOneClicked)
         {
           card.duet.teamOneClicked = true;
 
           if(card.duet.teamTwoValue !== 'Agent')
           {
-            if(game.duet.timerTokens <= 0)
-            {
-              game.duet.winner = false;
-            }
-            else
-            { 
-              if(game.duet.bystanders === 0)
-              {
-                game.duet.timerTokens -= 2;
-              }
-              else
-              {
-                game.duet.bystanders--;
-                game.duet.timerTokens--;
-              }
-            }
+            decrementTurns();
 
             game.duet.teamOneTurn = !game.duet.teamOneTurn;
           }
@@ -201,22 +213,7 @@ apiRoutes.post('/:gameName/cardClicked', (req, res) => {
 
           if(card.duet.teamOneValue !== 'Agent')
           {
-            if(game.duet.timerTokens <= 0)
-            {
-              game.duet.winner = false;
-            }
-            else
-            { 
-              if(game.duet.bystanders === 0)
-              {
-                game.duet.timerTokens -= 2;
-              }
-              else
-              {
-                game.duet.bystanders--;
-                game.duet.timerTokens--;
-              }
-            }
+            decrementTurns();
 
             game.duet.teamOneTurn = !game.duet.teamOneTurn;
           }
@@ -595,7 +592,7 @@ function requestIsNew(gameTime, requestTime)
 }
 
 function logError(err) {
-  console.log(err)
+  console.error(err)
 }
 
 function readGamesFromFile()

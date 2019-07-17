@@ -56,15 +56,15 @@ export default function Card(props)
   {
     if(props.info.duet.teamTwoValue === 'Agent')
     {
-      cssClass += ' reveal-agent';
+      cssClass += ' duet-reveal duet-agent';
     }
     else if(props.info.duet.teamTwoValue === 'Assassin')
     {
-      cssClass += ' reveal-assassin';
+      cssClass += ' duet-reveal duet-assassin';
     }
     else
     {
-      cssClass += ' reveal-neutral';
+      cssClass += ' duet-reveal duet-neutral';
     }
   }
   
@@ -73,15 +73,15 @@ export default function Card(props)
   {
     if(props.info.duet.teamOneValue === 'Agent')
     {
-      cssClass += ' reveal-agent';
+      cssClass += ' duet-reveal duet-agent';
     }
     else if(props.info.duet.teamOneValue === 'Assassin')
     {
-      cssClass += ' reveal-assassin';
+      cssClass += ' duet-reveal duet-assassin';
     }
     else
     {
-      cssClass += ' reveal-neutral';
+      cssClass += ' duet-reveal duet-neutral';
     }
   }
 

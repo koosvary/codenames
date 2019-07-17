@@ -5,9 +5,11 @@ import io from "socket.io-client";
 import Board from './Board';
 import { connect } from 'react-redux';
 
-import { changeRole, toggleExpansion, toggleColourblind, toggleNightMode, toggleDuetTeam } from '../actions/userOptionsActions';
+import { changeRole, toggleExpansion, toggleColourblind, toggleNightMode, toggleDuetTeam, changeDuetTurns, changeDuetMistakes } from '../actions/userOptionsActions';
 import { updateGame, loadGame, startNewGame, endTurn, cardClick, toggleHardMode, toggleDuet } from '../actions/gameActions';
 import { socketUrl } from '../config/serverUrl';
+
+import NumericInput from 'react-numeric-input';
 
 const stateMap = (store) => {
 
@@ -39,9 +41,12 @@ class Game extends Component
     this.toggleColourblind = this.toggleColourblind.bind(this);
     this.toggleNightMode = this.toggleNightMode.bind(this);
     this.toggleHardMode = this.toggleHardMode.bind(this);
+    this.loadGame = this.loadGame.bind(this);
+
     this.toggleDuet = this.toggleDuet.bind(this);
     this.toggleDuetTeam = this.toggleDuetTeam.bind(this);
-    this.loadGame = this.loadGame.bind(this);
+    this.changeDuetTurns = this.changeDuetTurns.bind(this);
+    this.changeDuetMistakes = this.changeDuetMistakes.bind(this);
 
     
     // Socket room and connection
@@ -97,6 +102,35 @@ class Game extends Component
                     game.duetScore + ' cards remaining...'
         }
     }
+
+    // Turn and mistake values
+    let duetTimerTokens = this.props.game.duet.timerTokens;
+    let duetMistakesAllowed = this.props.game.duet.bystanders;
+
+    // If winner is not null, then the values may get set to the game's - which can be 0
+    if(this.props.game.duet.winner == null)
+    {
+      // Assign the default of 9 turns and bystanders if player options weren't set
+      // Won't matter if not set (server-side at least) but looks better
+      if(!!this.props.options.duetTimerTokens)
+      {
+        duetTimerTokens = this.props.options.duetTimerTokens;
+      }
+      else
+      {
+        duetTimerTokens = 9;
+      }
+      
+      if(!!this.props.options.duetMistakesAllowed)
+      {
+        duetMistakesAllowed = this.props.options.duetMistakesAllowed;
+      }
+      else
+      {
+        duetMistakesAllowed = 9;
+      }
+    }
+
 
     return (
       <div className={
@@ -182,6 +216,14 @@ class Game extends Component
                   <span className="slider round"></span>
                 </label>
                 <div className="switch-label">Team One</div>
+              </div>
+              <div className="number-input">
+                <NumericInput min={1} max={11} step={1} size={1} id="totalTurns" name="totalTurns" onChange={this.changeDuetTurns} value={duetTimerTokens} />
+                <label htmlFor="totalTurns">Total turns (next game) </label>
+              </div>
+              <div className="number-input">
+                <NumericInput min={1} max={11} step={1} size={1} id="acceptableMistakes" name="acceptableMistakes" onChange={this.changeDuetMistakes} value={duetMistakesAllowed} />
+                <label htmlFor="acceptableMistakes">Acceptable mistakes </label>
               </div>
               </React.Fragment>
               }
@@ -283,14 +325,18 @@ class Game extends Component
 
   newGame()
   {
-    startNewGame(this.props.game.gameName, this.props.options.selectedExpansions);
+    const duetTimerTokens = document.getElementById('totalTurns').getValueAsNumber();
+    const duetMistakesAllowed = document.getElementById('acceptableMistakes').getValueAsNumber();
+    startNewGame(this.props.game.gameName, this.props.options.selectedExpansions, duetTimerTokens, duetMistakesAllowed);
   }
   
   cardClick(cardIndex)
   {
     const cards = this.props.game.cards.slice();
 
-    if (cards[cardIndex].clicked || this.props.options.role === 'Spymaster')
+    // Player might be a spymaster when changing to duet, but now need to click!
+    // Opting to not change role upon switch to duet, in case players switch back
+    if (cards[cardIndex].clicked || (!this.props.game.duetMode && this.props.options.role === 'Spymaster'))
     {
       return;
     }
@@ -299,7 +345,7 @@ class Game extends Component
     {
       if(((this.props.game.duet.teamOneTurn && !this.props.options.duetTeamOne) ||
         (!this.props.game.duet.teamOneTurn && this.props.options.duetTeamOne)) &&
-          this.props.game.duet.timerTokens !== 0)
+          this.props.game.duet.timerTokens > 0)
         {
           return;
         }
@@ -325,13 +371,50 @@ class Game extends Component
   {
     toggleDuet(this.props.game.gameName);
   }  
+  
+  changeDuetTurns(totalTurns)
+  {
+    
+    let mistakesAllowed = document.getElementById('acceptableMistakes').getValueAsNumber();
+
+    if(totalTurns > 11 || totalTurns <= 0)
+    {
+      totalTurns = 9;
+    }
+
+    if(mistakesAllowed > totalTurns)
+    {
+      this.props.dispatch(changeDuetMistakes(totalTurns));
+    }
+
+    this.props.dispatch(changeDuetTurns(totalTurns));
+  }
+  
+  changeDuetMistakes(mistakesAllowed)
+  {
+    let totalTurns = document.getElementById('totalTurns').getValueAsNumber();
+
+    if(mistakesAllowed > 11 || mistakesAllowed <= 0)
+    {
+      totalTurns = 9;
+    }
+
+    if(mistakesAllowed > totalTurns)
+    {
+      mistakesAllowed = totalTurns;
+    }
+
+    this.props.dispatch(changeDuetMistakes(mistakesAllowed));
+  }
 
   // React Native checks for when a device goes from inactive to active
-  componentDidMount() {
+  componentDidMount()
+  {
     AppState.addEventListener('change', this.reconnectToGame);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount()
+  {
     AppState.removeEventListener('change', this.reconnectToGame);
   }
 
