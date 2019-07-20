@@ -159,7 +159,7 @@ class Game extends Component
             }
             </div>
             <div id="status" className={playingTeamColour}>{status}</div>
-            {!this.props.game.winner && this.props.game.duet.winner === null && <button id="end-turn" onClick={this.endTurn}>End {playingTeam}&apos;s turn</button>}
+            {!this.props.game.winner && this.props.game.duet.winner === null && this.props.game.duet.timerTokens > 0 && <button id="end-turn" onClick={this.endTurn}>End {playingTeam}&apos;s turn</button>}
           </div>
           <Board
             cards={this.props.game.cards}
