@@ -27,7 +27,7 @@ class Game extends Component
       appState: AppState.currentState,
 
       // Game name from the URL
-      gameName: window.location.pathname.split('/')[1],
+      gameName: window.location.pathname.split('/')[1].toLowerCase(),
 
       // Websocket to receive data from the server
       socket: io.connect(socketUrl),
@@ -325,8 +325,8 @@ class Game extends Component
 
   newGame()
   {
-    const duetTimerTokens = document.getElementById('totalTurns').getValueAsNumber();
-    const duetMistakesAllowed = document.getElementById('acceptableMistakes').getValueAsNumber();
+    const duetTimerTokens = document.getElementById('totalTurns') ? document.getElementById('totalTurns').getValueAsNumber() : null;
+    const duetMistakesAllowed = document.getElementById('acceptableMistakes') ? document.getElementById('acceptableMistakes').getValueAsNumber() : null;
     startNewGame(this.props.game.gameName, this.props.options.selectedExpansions, duetTimerTokens, duetMistakesAllowed);
   }
   

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { Router, Route, Switch } from 'react-router';
+import { Router, Route, Switch, Redirect } from 'react-router';
 import history from './history'
 
 import Game from './components/Game';
@@ -25,6 +25,7 @@ const gameRouter = (
   <Router history={history}>
     <Switch>
       <Route path='/:gameName' exact render={props => <Game {...props} />} />
+      <Route path='/:gameName/' render={() => <Redirect to="/" />} />
     </Switch>
   </Router>
 )
