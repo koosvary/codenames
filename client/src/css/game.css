@@ -35,14 +35,17 @@
 /*! Duet game styling */
 #game .green{color:#0e9c2d;}
 
-#game.duet.team-one #board .card.team-one-agent,#game.duet.team-two #board .card.team-two-agent{color:#0e9c2d;background:#DDD;}
 #game.duet.team-one #board .card.team-one-assassin,#game.duet.team-two #board .card.team-two-assassin{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;color:#000;}
 #game.duet.team-one #board .card.team-one-neutral,#game.duet.team-two #board .card.team-two-neutral{background:#DDD;color:#000;}
+#game.duet.team-one #board .card.team-one-agent,#game.duet.team-two #board .card.team-two-agent{color:#0e9c2d;background:#DDD;}
 
+
+#game.duet.team-one #board .card.team-one-agent.duet-reveal.duet-neutral,#game.duet.team-two #board .card.team-two-agent.duet-reveal.duet-neutral{background:#ede2cc ;color:#0e9c2d}
 
 #game.duet #board .card.duet-reveal.duet-neutral{background:#ede2cc !important;color:#000}
 #game.duet #board .card.duet-reveal.duet-assassin{background:#000 !important;color:#fff !important;}
 #game.duet #board .card.duet-reveal.duet-agent{background:#0e9c2d !important;color:#fff !important;}
+
 
 /*! Duet colourblind mode */
 #game.duet.colourblind.team-one #board .card.team-one-agent,#game.duet.colourblind.team-two #board .card.team-two-agent{outline:3px dashed #0e9c2d;border:3px solid #fff;width:130px;height:90px;box-sizing:border-box;line-height: 70px;}
